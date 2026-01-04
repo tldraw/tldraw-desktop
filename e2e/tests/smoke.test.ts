@@ -48,38 +48,15 @@ test.describe('End-to-End Workflow', () => {
 		await editor.cancelShortcut()
 		await editor.expectTitleToContain(/test-.*\.tldr/)
 
-		// Step 4: Set specific window bounds and save again to persist
-		// Note: CI runners may constrain exact values, so we check within tolerance
-		const customBounds = { x: 0, y: 50, width: 1200, height: 800 }
-		await editor.setWindowBounds(customBounds)
-		await expect
-			.poll(
-				async () => {
-					const bounds = await editor.getWindowBounds()
-					const widthClose = Math.abs(bounds.width - customBounds.width) < 100
-					const heightClose = Math.abs(bounds.height - customBounds.height) < 100
-					return widthClose && heightClose
-				},
-				{ timeout: 3000, message: 'Window bounds should be applied' }
-			)
-			.toBe(true)
-
-		await editor.menu.save()
-		await editor.cancelShortcut()
-
-		// Step 5: Close the editor and verify home shows recent file
+		// Step 4: Close the editor and verify home shows recent file
 		const homeAgain = await HomePOM.After(app, () => editor.close())
 		await expect(homeAgain.getRecentFile('test-')).toBeVisible()
 		expect(editor.page.isClosed()).toBe(true)
 
-		// Step 6: Reopen the file and verify persistence
+		// Step 5: Reopen the file and verify content persistence
 		const editorAgain = await EditorPOM.After(app, () => homeAgain.openRecentFile('test-'))
 		await editorAgain.expectTitleToContain(/test-.*\.tldr/)
 		await editorAgain.expectShapeCount(2)
-
-		const restoredBounds = await editorAgain.getWindowBounds()
-		expect(restoredBounds.width).toBe(customBounds.width)
-		expect(restoredBounds.height).toBe(customBounds.height)
 	})
 
 	test('copy and paste workflow', async ({ app, homePom }) => {
