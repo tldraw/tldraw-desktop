@@ -4,6 +4,8 @@ import fs from 'fs/promises'
 import path from 'path'
 import { AppStoreSchema, ConfigSchema, OpenFileData, RecentFilesSchema } from 'src/types'
 import { Atom, atom } from 'tldraw'
+import iconLight from '../../resources/Icon-1024.png?asset'
+import iconDark from '../../resources/Icon-dark-1024.png?asset'
 import { MainManager } from './MainManager'
 
 export class StoreManager {
@@ -379,15 +381,12 @@ export class StoreManager {
 	}
 
 	checkIcon() {
-		// todo: update the app icon based on the user preferences
 		const isDarkMode = this.userPreferences.get().theme === 'dark'
 		if (this.darkIcon === isDarkMode) return
 		this.darkIcon = isDarkMode
 
-		const iconPath = isDarkMode
-			? path.join(__dirname, '..', '..', 'resources', 'Icon-dark-1024.png')
-			: path.join(__dirname, '..', '..', 'resources', 'Icon-1024.png')
-
+		// Use the statically imported icon paths
+		const iconPath = isDarkMode ? iconDark : iconLight
 		const icon = nativeImage.createFromPath(iconPath)
 
 		if (!icon || icon.isEmpty()) throw Error('Failed to load icon from ' + iconPath)

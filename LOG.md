@@ -56,3 +56,6 @@
 - 2026-01-03 22:20:42 UTC: implemented issue 0012 - automatic updates enhancements: added autoCheckUpdates preference, manual check from Help menu, fixed recursive checkForUpdates bug, improved error handling
 - 2026-01-03 22:25:42 UTC: implemented issue 0013 - set up CI/CD release process with GitHub Actions workflows for multi-platform builds
 - 2026-01-03 22:43:52 UTC: closed issue 0021, verified editor lifecycle hooks refactoring (SneakyFileUpdater/SneakyDarkModeSync replaced with useEditorPersistence/useEditorDarkModeSync)
+- 2026-01-04 00:57:18 UTC: fixed dark mode icon path error (#0028) - switched from __dirname path construction to Vite ?asset imports
+- 2026-01-04 00:57:48 UTC: migrated issue tracking from planning/issues/ to GitHub Issues - updated /issue and /take commands, deleted ISSUE_TEMPLATE.md
+- 2026-01-04 01:06:50 UTC: migrated 29 issues to GitHub Issues, deleted planning/ folder

@@ -4,7 +4,7 @@ model: opus
 
 # Take Issue
 
-You are taking up an issue from `planning/issues/` to implement it.
+You are taking up a GitHub issue to implement it.
 
 **User's input:** $ARGUMENTS
 
@@ -14,20 +14,23 @@ You are taking up an issue from `planning/issues/` to implement it.
 
 The user may reference an issue in various ways:
 
-- Direct number: "0001", "issue 0001", "#0001"
+- Direct number: "1", "issue 1", "#1"
 - Description: "dirty tracking", "rename file", "dark mode"
 - Partial match: "rename", "sync", "persistence"
 
-First, list all issues in `planning/issues/`:
+First, list open issues:
 
 ```bash
-ls planning/issues/
+gh issue list --state open
 ```
 
 Then find the matching issue:
 
-1. **If the input contains a number** (like "0001" or "#5"), look for the file starting with that number
-2. **If the input is descriptive**, search issue filenames and contents for matches
+1. **If the input contains a number** (like "1" or "#5"), look for that issue number
+2. **If the input is descriptive**, search issue titles and bodies for matches:
+   ```bash
+   gh issue list --search "keyword"
+   ```
 
 If you find exactly one match, proceed to Step 2.
 
@@ -47,35 +50,34 @@ If they say yes, invoke the `/issue` skill with their original description.
 
 ### Step 2: Read and Understand the Issue
 
-Read the full issue file. Pay attention to:
+View the full issue:
 
-- **Type**: bug, feature, enhancement, cleanup, docs
+```bash
+gh issue view <issue-number>
+```
+
+Pay attention to:
+
+- **Labels**: bug, feature, enhancement, cleanup, docs
 - **Description**: What needs to be done
 - **Acceptance Criteria**: Definition of done
 - **Technical Notes**: Affected files, implementation hints
-- **Implementation Plan**: Step-by-step guide (if filled in)
 
-If the Implementation Plan section just contains "..." or is empty, use the Task tool with `subagent_type="Explore"` and `model="opus"` to create one before proceeding.
+If there's no implementation plan in the issue or comments, use the Task tool with `subagent_type="Explore"` and `model="opus"` to create one before proceeding.
 
-### Step 3: Update Issue Status
+### Step 3: Assign the Issue
 
-Edit the issue file to change:
+Assign the issue to indicate you're working on it:
 
-```
-**Status:** `open`
-```
-
-to:
-
-```
-**Status:** `in-progress`
+```bash
+gh issue edit <issue-number> --add-assignee @me
 ```
 
 ### Step 4: Create Implementation Todo List
 
 Use an Opus subagent with Plan Mode to create a detailed Plan based on:
 
-1. The Implementation Plan (if available)
+1. The Implementation Plan (if available in issue or comments)
 2. The Acceptance Criteria
 3. Your understanding of the changes needed
 
@@ -112,41 +114,35 @@ After implementing:
 
 3. **Fix any errors** before proceeding
 
-4. **Write e2e test** - For most issues, write a small but meaningful e2e test that tests the most relevant behavior. Run ONLY this test (with npm run e2e -g <test name>`) to validate that it passes. Once it has passed, run the other tests.
+4. **Write e2e test** - For most issues, write a small but meaningful e2e test that tests the most relevant behavior. Run ONLY this test (with `npm run e2e -g <test name>`) to validate that it passes. Once it has passed, run the other tests.
 
 5. **Suggest further manual testing if needed** - For UI changes, suggest running `npm run dev` to verify
 
-### Step 7: Update the Issue
+### Step 7: Close the Issue
 
-Once all acceptance criteria are met:
+Once all acceptance criteria are met, close the issue with a comment summarizing the implementation:
 
-1. Edit the issue file to change status:
+```bash
+gh issue close <issue-number> --comment "$(cat <<'EOF'
+## Implementation Summary
 
-   ```
-   **Status:** `in-progress`
-   ```
+- Key changes made
+- Files modified
+- Testing notes
 
-   to:
-
-   ```
-   **Status:** `closed`
-   ```
-
-2. Check off completed acceptance criteria in the issue file
+EOF
+)"
+```
 
 ### Step 8: Summarize
 
-Provide a summary of:
+Provide a summary to the user of:
 
 - What issue was implemented
 - Key changes made (files modified)
 - Manual testing steps
 - Any acceptance criteria that couldn't be met (and why)
 - Suggestions for testing or follow-up work
-
-Write this below the implementation plan in the `## Implementation Notes` section, then communicate it to the user.
-
-Finally, if the issue is closed, move the closed issue to the `planning/issues/closed` folder.
 
 ## Important Notes
 
