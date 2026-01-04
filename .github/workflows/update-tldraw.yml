@@ -1,0 +1,137 @@
+name: Update tldraw
+
+on:
+  # Triggered by tldraw repo on new releases
+  repository_dispatch:
+    types: [tldraw-release]
+  # Fallback: weekly check in case webhook fails
+  schedule:
+    - cron: '0 9 * * 0' # Sundays at 9am UTC
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'npm tag to update to (e.g., next, latest)'
+        required: false
+        default: 'next'
+        type: string
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Get current and latest versions
+        id: versions
+        run: |
+          # Use payload from repository_dispatch, or fall back to inputs/defaults
+          TAG="${{ github.event.client_payload.tag || inputs.tag || 'next' }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+          # Get current version from package.json
+          CURRENT=$(node -p "require('./package.json').dependencies.tldraw.replace('^', '')")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+
+          # Use version from payload if provided, otherwise fetch from npm
+          PAYLOAD_VERSION="${{ github.event.client_payload.version }}"
+          if [ -n "$PAYLOAD_VERSION" ]; then
+            LATEST="$PAYLOAD_VERSION"
+          else
+            LATEST=$(npm view "tldraw@$TAG" version 2>/dev/null || echo "")
+          fi
+          echo "latest=$LATEST" >> $GITHUB_OUTPUT
+
+          if [ -z "$LATEST" ]; then
+            echo "No version found for tldraw@$TAG"
+            echo "should_update=false" >> $GITHUB_OUTPUT
+          elif [ "$CURRENT" = "$LATEST" ]; then
+            echo "Already on latest version: $CURRENT"
+            echo "should_update=false" >> $GITHUB_OUTPUT
+          else
+            echo "Update available: $CURRENT -> $LATEST"
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update dependencies
+        if: steps.versions.outputs.should_update == 'true'
+        run: |
+          TAG="${{ steps.versions.outputs.tag }}"
+          LATEST="${{ steps.versions.outputs.latest }}"
+
+          # Update both tldraw packages to the same version
+          npm install "tldraw@$LATEST" "@tldraw/utils@$LATEST"
+
+      - name: Install all dependencies
+        if: steps.versions.outputs.should_update == 'true'
+        run: npm ci
+
+      - name: Run type checking
+        if: steps.versions.outputs.should_update == 'true'
+        id: typecheck
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Run linting
+        if: steps.versions.outputs.should_update == 'true'
+        id: lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Create Pull Request
+        id: create-pr
+        if: steps.versions.outputs.should_update == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update tldraw to ${{ steps.versions.outputs.latest }}'
+          title: 'chore: update tldraw to ${{ steps.versions.outputs.latest }}'
+          body: |
+            ## Automated tldraw Update
+
+            Updates tldraw dependencies from `${{ steps.versions.outputs.current }}` to `${{ steps.versions.outputs.latest }}` (tag: `${{ steps.versions.outputs.tag }}`).
+
+            ### Checks
+
+            | Check | Status |
+            |-------|--------|
+            | Type checking | ${{ steps.typecheck.outcome == 'success' && '✅ Passed' || '❌ Failed' }} |
+            | Linting | ${{ steps.lint.outcome == 'success' && '✅ Passed' || '❌ Failed' }} |
+
+            ${{ (steps.typecheck.outcome != 'success' || steps.lint.outcome != 'success') && '⚠️ **Some checks failed.** This may indicate breaking changes in the new tldraw version. Please review carefully.' || '✅ All checks passed.' }}
+
+            ### Changes
+
+            - `tldraw`: `${{ steps.versions.outputs.current }}` → `${{ steps.versions.outputs.latest }}`
+            - `@tldraw/utils`: `${{ steps.versions.outputs.current }}` → `${{ steps.versions.outputs.latest }}`
+
+            ### Testing
+
+            - [ ] E2E tests pass (triggered automatically on this PR)
+            - [ ] Manual smoke test if needed
+
+            ---
+            🤖 This PR was automatically created by the [update-tldraw workflow](https://github.com/${{ github.repository }}/actions/workflows/update-tldraw.yml).
+          branch: auto/update-tldraw-${{ steps.versions.outputs.latest }}
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+
+      - name: Enable auto-merge
+        if: steps.create-pr.outputs.pull-request-number
+        run: gh pr merge ${{ steps.create-pr.outputs.pull-request-number }} --auto --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
