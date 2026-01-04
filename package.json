@@ -1,7 +1,7 @@
 {
 	"name": "tldraw-desktop",
 	"productName": "tldraw",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "A desktop app for tldraw",
 	"main": "./out/main/index.js",
 	"author": {
