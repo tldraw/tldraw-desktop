@@ -1,0 +1,58 @@
+- 2026-01-03 12:48:04 UTC: created issue 0011 for file watcher feature (external rename detection)
+- 2026-01-03 12:48:06 UTC: created issue #0011 for per-file storage architecture change
+- 2026-01-03 12:48:11 UTC: created issue 0011 for automatic updates enhancement
+- 2026-01-03 12:48:13 UTC: created issue 0011 - add more global preferences (feature request)
+- 2026-01-03 12:49:04 UTC: Created issue #0011 for setting up npm publish/release CI/CD pipeline
+- 2026-01-03 13:03:04 UTC: fixed duplicate window control buttons on macOS by conditionally rendering placeholder buttons only on non-macOS platforms
+- 2026-01-03 13:21:42 UTC: Fixed e2e test failures - added missing console.log signals (home-window-show, editor-window-created) and fixed smoke test save timing
+- 2026-01-03 13:54:24 UTC: Implemented patch-based sync (issue 0002) - replaced polling with incremental RecordsDiff patches via SyncManager
+- 2026-01-03 14:06:10 UTC: Added e2e tests for patch-based sync, fixed editor init to use mergeRemoteChanges
+- 2026-01-03 14:21:51 UTC: implemented license page (issue 0003) - displays tldraw SDK, Electron, and React licenses with scrollable content and theme support
+- 2026-01-03 14:34:31 UTC: added e2e tests for license page (6 tests) - also added Help > License menu item and LicensePOM
+- 2026-01-03 14:38:47 UTC: implemented multi-monitor window restoration (issue 0004)
+- 2026-01-03 14:47:38 UTC: added e2e test for window position restoration
+- 2026-01-03 15:40:56 UTC: implemented About page (issue 0010) with logo, version, attribution, and links
+- 2026-01-03 15:41:24 UTC: implemented issue 0005 - improved dirty tracking with event-driven approach via document-dirty-change IPC, dirty indicator in title bar, and macOS setDocumentEdited API
+- 2026-01-03 15:41:56 UTC: implemented issue 0015 - added proper error page with styled ErrorDisplay component, recovery buttons, and dev-only error details
+- 2026-01-03 15:56:09 UTC: completed issue 0022 - improved e2e test infrastructure with electron-playwright-helpers, dialog stubbing, trace/video capture, and CI workflow
+- 2026-01-03 16:04:09 UTC: added e2e tests for About page (6 tests)
+- 2026-01-03 16:08:28 UTC: improved e2e tests (license, smoke, sync): added beforeEach patterns, polling assertions, better test organization, new test cases for sync timing and shape ID consistency
+- 2026-01-03 16:09:12 UTC: improved e2e tests - added missing test cases to about.test.ts, enhanced POMs with better patterns and new methods
+- 2026-01-03 16:10:05 UTC: Improved e2e tests: added polling assertions to reduce flakiness, new test cases for Save As, Open, multiple files/editors, document identity, recent files list
+- 2026-01-03 16:17:13 UTC: improved e2e/tests/about.test.ts - added beforeEach for test groups, new navigation tests (reopen, close from editor), page structure tests, and POM locators (getLayout, getHero)
+- 2026-01-03 16:19:16 UTC: created issue 0025 for keyboard shortcuts not triggering Electron menu accelerators in e2e tests
+- 2026-01-03 16:19:40 UTC: improved e2e tests (license, smoke, sync): removed shared state issues, used expectShapeCount POM method, added descriptive error messages, simplified conditional crash recovery test
+- 2026-01-03 16:19:44 UTC: implemented issue 0023 - file menu items now disabled when no file is open
+- 2026-01-03 16:19:50 UTC: created issue 0025 for home window visibility race condition in WindowManager.ts handleClosed callback
+- 2026-01-03 16:20:36 UTC: improved e2e test reliability in app-menu.test.ts, editor.test.ts, home.test.ts - consistent use of expectShapeCount(), regex patterns, better error messages
+- 2026-01-03 16:29:06 UTC: closed issue 0006 - already resolved by patch-based sync (issue 0002)
+- 2026-01-03 16:31:55 UTC: fixed home window visibility race condition (issue 0030) - added debounced scheduleHomeWindowCheck() to prevent race when multiple editors close rapidly
+- 2026-01-03 16:32:08 UTC: implemented file watcher for external rename/delete detection (issue 0011)
+- 2026-01-03 16:33:49 UTC: Updated design-doc.md with acceptance requirements from 12 closed issues (rename, window management, sync, about/license/error pages, e2e testing)
+- 2026-01-03 16:34:54 UTC: fixed issue 0029 - license POM selector mismatch (.license -> .license**layout, .license**header -> .editor\_\_titlebar)
+- 2026-01-03 16:38:28 UTC: Added home screen, recent files, theme, auto-updates, keyboard shortcuts, and multi-window features to design-doc.md
+- 2026-01-03 16:40:35 UTC: closed issue 0028 - added getVisibleWindows/getVisibleWindowCount helpers for e2e tests
+- 2026-01-03 16:49:55 UTC: Reopened issue 0001 (rename file) - code still returns 'Not implemented', updated design doc accordingly
+- 2026-01-03 17:08:00 UTC: fixed EditorPOM.After to poll for URL change - race condition with unawaited loadUrlInWindow
+- 2026-01-03 17:23:23 UTC: fixed e2e test flakiness - stub save dialog at startup, poll for URL changes in waitForWindowWithConsoleMessage
+- 2026-01-03 17:35:20 UTC: fixed keyboard shortcut e2e tests by using clickMenuItemById instead of page.keyboard.press() for Electron menu accelerators (issue 0027)
+- 2026-01-03 17:44:27 UTC: fixed e2e test 'should indicate unsaved changes in title' - isDirty() was checking for '\*' but title uses '•'
+- 2026-01-03 17:56:19 UTC: fixed recents list test - test files now get unique names (testId++), sort by lastOpened not lastModified
+- 2026-01-03 18:24:49 UTC: fixed e2e crash caused by preloaded window race condition - disabled preloaded window optimization during --playwright tests
+- 2026-01-03 19:08:59 UTC: Fixed e2e test race conditions - decoupled save/open testId counters, improved window detection in base-pom.ts, fixed undo in batch operations test
+- 2026-01-03 19:13:55 UTC: Added menu visibility wait in EditorPOM.openMenu() to reduce flaky test failures
+- 2026-01-03 19:35:37 UTC: Improved e2e test stability - added retries, removed flaky focus assertions, added explicit waitFor on menu items
+- 2026-01-03 19:40:34 UTC: implemented File > Rename feature (issue 0001) - renames .tldr files on disk and updates stores
+- 2026-01-03 20:00:01 UTC: Implemented Open Recent menu (issue 0028) - adds File > Open Recent submenu with recent files list and Clear Recent option
+- 2026-01-03 20:55:50 UTC: Implemented issue 0031 - replaced tldraw hamburger menu with native Electron menus (Edit, Arrange, View, Insert)
+- 2026-01-03 21:10:02 UTC: merged title bar with tldraw menu bar - traffic lights, title, and page menu now on same row via EditorMenuPanel component
+- 2026-01-03 21:10:20 UTC: implemented per-file storage (issue 0019) - data now stored in config.json, recent-files.json, and files/*.json instead of single open-files.json
+- 2026-01-03 21:17:43 UTC: added double-click to rename on document title in editor menu panel
+- 2026-01-03 21:36:31 UTC: replaced native macOS traffic lights with custom window controls
+- 2026-01-03 21:39:22 UTC: extracted WindowControls into reusable component for both Titlebar and EditorMenuPanel
+- 2026-01-03 21:52:53 UTC: Removed hamburger menu support from EditorPOM, migrated menu operations to use native Electron appMenu
+- 2026-01-03 22:04:02 UTC: added 'Don't Test Content or Copy' guidance to e2e-tests skill
+- 2026-01-03 22:13:06 UTC: implemented awaitable IPC pattern (issue 0018) - replaced request/response events with invokeRenderer for save operations
+- 2026-01-03 22:20:42 UTC: implemented issue 0012 - automatic updates enhancements: added autoCheckUpdates preference, manual check from Help menu, fixed recursive checkForUpdates bug, improved error handling
+- 2026-01-03 22:25:42 UTC: implemented issue 0013 - set up CI/CD release process with GitHub Actions workflows for multi-platform builds
+- 2026-01-03 22:43:52 UTC: closed issue 0021, verified editor lifecycle hooks refactoring (SneakyFileUpdater/SneakyDarkModeSync replaced with useEditorPersistence/useEditorDarkModeSync)

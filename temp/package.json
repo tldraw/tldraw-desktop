@@ -1,0 +1,30 @@
+{
+	"name": "tldraw-desktop",
+	"productName": "tldraw",
+	"version": "1.0.0",
+	"description": "A desktop app for tldraw",
+	"main": "./out/main/index.js",
+	"author": {
+		"name": "tldraw.com",
+		"email": "hello@tldraw.com",
+		"url": "https://tldraw.com"
+	},
+	"homepage": "https://tldraw.com",
+	"dependencies": {
+		"@electron-toolkit/preload": "^3.0.1",
+		"@electron-toolkit/utils": "^3.0.0",
+		"dotenv": "^16.4.7",
+		"electron-updater": "^6.1.7",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
+		"react-router": "^7.1.1",
+		"react-router-dom": "^7.1.1",
+		"tldraw": "^3.6.1"
+	},
+	"packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/tldraw/tldraw-desktop.git"
+	},
+	"license": "UNLICENSED"
+}

@@ -1,0 +1,14 @@
+node_modules
+dist
+out
+.DS_Store
+*.log*
+.env
+.electron-builder.env
+.playwright-results/.last-run.json
+
+# Secrets
+*.pem
+*.p12
+cert.p12
+.env
