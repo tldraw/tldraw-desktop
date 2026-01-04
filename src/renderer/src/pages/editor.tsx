@@ -22,6 +22,7 @@ import {
 	Tldraw,
 	TldrawOptions,
 	TLStoreWithStatus,
+	TLUiOverrides,
 } from 'tldraw'
 
 export function Component() {
@@ -108,6 +109,45 @@ const components: TLComponents = {
 	MenuPanel: EditorMenuPanel, // Custom panel with title + page menu
 }
 
+const overrides: TLUiOverrides = {
+	actions(_editor, actions) {
+		// File operations - these trigger IPC to the main process
+		actions['save-file'] = {
+			id: 'save-file',
+			label: 'action.save-file',
+			kbd: '$s',
+			onSelect() {
+				window.api.sendRendererEventToMain('editor-save-file', {})
+			},
+		}
+		actions['save-file-as'] = {
+			id: 'save-file-as',
+			label: 'action.save-file-as',
+			kbd: '$!s',
+			onSelect() {
+				window.api.sendRendererEventToMain('editor-save-as-file', {})
+			},
+		}
+		actions['new-file'] = {
+			id: 'new-file',
+			label: 'action.new-file',
+			kbd: '$n',
+			onSelect() {
+				window.api.sendRendererEventToMain('editor-new-file', {})
+			},
+		}
+		actions['open-file'] = {
+			id: 'open-file',
+			label: 'action.open-file',
+			kbd: '$o',
+			onSelect() {
+				window.api.sendRendererEventToMain('editor-open-file', {})
+			},
+		}
+		return actions
+	},
+}
+
 const options: Partial<TldrawOptions> = {
 	actionShortcutsLocation: 'toolbar',
 }
@@ -120,7 +160,13 @@ const PreloadedTldrawEditorView = () => {
 	return (
 		<div className="editor__layout">
 			<div className="editor__tldraw" style={{ opacity: 0 }}>
-				<Tldraw store={store} components={components} options={options} />
+				<Tldraw
+					store={store}
+					overrides={overrides}
+					components={components}
+					options={options}
+					autoFocus
+				/>
 			</div>
 		</div>
 	)
@@ -201,7 +247,14 @@ const TldrawEditorView = memo<{
 	return (
 		<div className="editor__layout">
 			<div className="editor__tldraw" style={{ opacity: ready ? 1 : 0 }}>
-				<Tldraw store={store} components={components} onMount={handleMount} options={options} />
+				<Tldraw
+					store={store}
+					overrides={overrides}
+					components={components}
+					onMount={handleMount}
+					options={options}
+					autoFocus
+				/>
 			</div>
 		</div>
 	)
