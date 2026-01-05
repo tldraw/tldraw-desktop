@@ -4,7 +4,7 @@ model: opus
 
 # Take Issue
 
-You are taking up a GitHub issue to implement it.
+You are taking up a GitHub issue from the `tldraw/tldraw-desktop` repo to implement it.
 
 **User's input:** $ARGUMENTS
 
@@ -14,23 +14,14 @@ You are taking up a GitHub issue to implement it.
 
 The user may reference an issue in various ways:
 
-- Direct number: "1", "issue 1", "#1"
+- Direct number: "0001", "issue 0001", "#0001"
 - Description: "dirty tracking", "rename file", "dark mode"
 - Partial match: "rename", "sync", "persistence"
 
-First, list open issues:
+Find the matching issue on GitHub:
 
-```bash
-gh issue list --state open
-```
-
-Then find the matching issue:
-
-1. **If the input contains a number** (like "1" or "#5"), look for that issue number
-2. **If the input is descriptive**, search issue titles and bodies for matches:
-   ```bash
-   gh issue list --search "keyword"
-   ```
+1. **If the input contains a number** (like "0001" or "#5"), look for the file starting with that number
+2. **If the input is descriptive**, search issue filenames and contents for matches
 
 If you find exactly one match, proceed to Step 2.
 
@@ -50,45 +41,37 @@ If they say yes, invoke the `/issue` skill with their original description.
 
 ### Step 2: Read and Understand the Issue
 
-View the full issue:
+Read the full issue file. Pay attention to:
 
-```bash
-gh issue view <issue-number>
-```
-
-Pay attention to:
-
-- **Labels**: bug, feature, enhancement, cleanup, docs
+- **Type**: bug, feature, enhancement, cleanup, docs
 - **Description**: What needs to be done
 - **Acceptance Criteria**: Definition of done
 - **Technical Notes**: Affected files, implementation hints
 
-If there's no implementation plan in the issue or comments, use the Task tool with `subagent_type="Explore"` and `model="opus"` to create one before proceeding.
+Read the replies to the issue as well. Often the second reply will be the result of an Exploration of the issue.
 
-### Step 3: Assign the Issue
+### Step 3: Assign the issue
 
-Assign the issue to indicate you're working on it:
-
-```bash
-gh issue edit <issue-number> --add-assignee @me
-```
+Assign the issue to the current user on GitHub. If there is a user already, ask the user whether to proceed.
 
 ### Step 4: Create Implementation Todo List
 
 Use an Opus subagent with Plan Mode to create a detailed Plan based on:
 
-1. The Implementation Plan (if available in issue or comments)
-2. The Acceptance Criteria
+1. The issue
+2. The issue's replies or discussion
 3. Your understanding of the changes needed
 
 ### Step 5: Implement the Changes
+
+Create a new branch for the issue.
 
 Work through the todo list systematically:
 
 1. **Read before editing** - Always read files before modifying them
 2. **Follow existing patterns** - Match the codebase's style and conventions
 3. **Make focused changes** - Don't over-engineer or add unrequested features
-4. **Update todos** - Mark items complete as you finish them
+4. **Update todos** - Mark items complete in the issue as you finish them
 
 For each change:
 
@@ -103,40 +86,22 @@ After implementing:
 1. **Run type checking**:
 
    ```bash
-   npm run typecheck
+   yarn typecheck
    ```
 
 2. **Run linting**:
 
    ```bash
-   npm run lint
+   yarn lint
    ```
 
 3. **Fix any errors** before proceeding
 
-4. **Write e2e test** - For most issues, write a small but meaningful e2e test that tests the most relevant behavior. Run ONLY this test (with `npm run e2e -g <test name>`) to validate that it passes. Once it has passed, run the other tests.
-
-5. **Suggest further manual testing if needed** - For UI changes, suggest running `npm run dev` to verify
-
-### Step 7: Close the Issue
-
-Once all acceptance criteria are met, close the issue with a comment summarizing the implementation:
-
-```bash
-gh issue close <issue-number> --comment "$(cat <<'EOF'
-## Implementation Summary
-
-- Key changes made
-- Files modified
-- Testing notes
-
-EOF
-)"
-```
+4. **Suggest further manual testing if needed** - For UI changes, suggest running `npm run dev` to verify
 
 ### Step 8: Summarize
 
-Provide a summary to the user of:
+Provide a summary of:
 
 - What issue was implemented
 - Key changes made (files modified)
@@ -144,9 +109,10 @@ Provide a summary to the user of:
 - Any acceptance criteria that couldn't be met (and why)
 - Suggestions for testing or follow-up work
 
+Communicate this to the user.
+
 ## Important Notes
 
 - **Ask questions** if requirements are unclear - use AskUserQuestion
 - **Don't guess** at implementation details that aren't specified
 - **Keep changes focused** on the issue at hand
-- **Commit separately** - Don't auto-commit; let the user decide when to commit
