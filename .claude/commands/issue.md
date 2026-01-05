@@ -1,118 +1,184 @@
-# Create New Issue
+---
+title: 'Create GitHub Issue'
+description: 'Create a GitHub issue from a description'
+argument-hint: '[description]'
+---
 
-You are creating a new GitHub issue based on the user's description.
+# Create and research a GitHub issue
 
-**User's issue description:** $ARGUMENTS
+Create a new GitHub issue on the `tldraw/tldraw-desktop` repo based on the user's description, then research it thoroughly.
 
-## Workflow
+## User's issue description
 
-### Step 1: Initial Exploration
+$ARGUMENTS
 
-Before creating the issue, do a quick exploration to understand:
+## Instructions
 
-- What area of the codebase is affected
-- Whether this is a bug fix or feature request
-- Key files or components involved
+### Step 1: Initial investigation
 
-Use Glob and Grep to search for relevant code. Read 2-3 key files to understand the context. Keep this exploration brief - just enough to write a good issue.
+First, do a quick investigation of the codebase to understand the problem area:
 
-### Step 2: Draft the Issue
+- Search for relevant files, functions, or patterns mentioned in the issue description
+- Identify the likely affected code areas
+- Note any obvious causes or related code
 
-Prepare the issue content with:
+### Step 2: Capture screenshots (for bugs)
 
-**Title:** A clear, concise title describing the issue
+If this is a bug report and it can be visually demonstrated, try to capture screenshots:
 
-**Body:** Use this structure:
+1. **Check if dev server is running** (or start it):
+   - `localhost:5420` - Examples app (`yarn dev`)
+   - `localhost:3000` - tldraw.com app (`yarn dev-app`)
+   - `localhost:3001` - Docs site (`yarn dev-docs`)
 
-```markdown
-## Description
+2. **Use the dev-browser skill** to navigate and screenshot:
+   - Navigate to the relevant example or page
+   - Reproduce the bug visually if possible
+   - Take a screenshot showing the issue
 
-[Clear description based on user input and your exploration]
+3. **Upload screenshots** to the issue:
+   - Use `gh issue edit` to add images after creating the issue, or
+   - Upload to GitHub and include the URL in the issue body
 
-## Context
+If screenshots aren't feasible (e.g., the bug is non-visual, or reproduction is complex), skip this step and note in the issue what behavior to look for.
 
-[Why is this needed? What problem does it solve?]
+### Step 3: Create the issue
 
-## Acceptance Criteria
+Create the issue on GitHub following the standards in `.claude/skills/write-issue.md`:
 
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-- [ ] [Criterion 3]
+1. **Determine the issue type**:
+   - `Bug` - Something isn't working as expected
+   - `Feature` - New capability or improvement
+   - `Example` - Request for a new SDK example
+   - `Task` - Internal task or chore
 
-## Technical Notes
+2. **Write a clear title** following these rules:
+   - Use sentence case (capitalize only first word and proper nouns)
+   - No type prefixes like `Bug:`, `Feature:`, `[Bug]`
+   - For bugs: describe the symptom (e.g., "Arrow bindings break with rotated shapes")
+   - For features/enhancements: use imperative mood (e.g., "Add padding option to zoomToFit")
 
-**Affected files:**
-- [file:line - brief description]
+3. **Write a descriptive body**:
 
-**Current behavior:** (for bugs)
-[What happens now]
+   For **bugs**:
+   - Clear description of what's wrong
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Environment details (browser, OS, tldraw version) when relevant
+   - Screenshots or recordings if applicable
 
-**Expected behavior:** (for bugs)
-[What should happen]
+   For **features/enhancements**:
+   - Problem statement: What problem does this solve?
+   - Proposed solution: How should it work?
+   - Alternatives considered
+   - Use cases: Who benefits and how?
 
-**Implementation approach:** (for features)
-[High-level approach based on initial exploration]
-```
+   For **examples**:
+   - What API or pattern should be demonstrated
+   - Why it's useful / when developers need this
+   - Suggested approach if possible
 
-### Step 3: Create the Issue
-
-Use the GitHub CLI to create the issue:
-
-```bash
-gh issue create --title "Issue title" --body "$(cat <<'EOF'
-## Description
-...
-
-## Context
-...
-
-## Acceptance Criteria
-- [ ] ...
-
-## Technical Notes
-...
-EOF
-)"
-```
-
-Add appropriate labels based on the issue type:
-- `bug` - Something is broken or not working correctly
-- `feature` - New functionality that doesn't exist
-- `enhancement` - Improving existing functionality
-- `cleanup` - Code cleanup, refactoring, removing dead code
-- `docs` - Documentation changes
-
-Example with label:
-```bash
-gh issue create --title "..." --body "..." --label "bug"
-```
-
-### Step 4: Technical Deep Dive (Optional)
-
-For complex issues, use the Task tool with `subagent_type="Explore"` to do a thorough technical exploration:
-
-For **bugs**: Ask the agent to do root cause analysis - trace the code path, identify where the bug originates, and document the fix approach.
-
-For **features/enhancements**: Ask the agent to explore the implementation - identify all files that need changes, understand the existing patterns, and outline the implementation steps.
-
-After the exploration, update the issue with implementation details:
+4. **Create the issue** using `gh issue create`:
 
 ```bash
-gh issue comment <issue-number> --body "$(cat <<'EOF'
-## Implementation Plan
-
-1. Step one
-2. Step two
-...
-EOF
-)"
+gh issue create --repo tldraw/tldraw-desktop \
+  --title "Your title here" \
+  --body "Your body here"
 ```
 
-## Output
+5. **Set the issue type** via the GitHub API (the `--type` flag is not supported in all gh versions):
 
-After completing all steps, summarize:
+```bash
+# Get the issue number from the URL returned by gh issue create
+# Then set the type using the GraphQL API:
+gh api graphql -f query='
+  mutation {
+    updateIssue(input: {
+      id: "<issue-node-id>",
+      issueTypeId: "<type-id>"
+    }) {
+      issue { id }
+    }
+  }
+'
+```
 
-- Issue number and URL created
-- Type (bug/feature/etc)
-- Key findings from the technical exploration
-- Brief overview of the implementation plan (if created)
+To get the issue node ID and available type IDs:
+
+```bash
+# Get issue node ID
+gh issue view <issue-number> --repo tldraw/tldraw-desktop --json id --jq '.id'
+
+# List available issue types for the repo
+gh api graphql -f query='
+  query {
+    repository(owner: "tldraw", name: "tldraw") {
+      issueTypes(first: 10) {
+        nodes { id name }
+      }
+    }
+  }
+'
+```
+
+6. **Assign a milestone** (if appropriate):
+
+If the issue clearly fits one of these milestones, assign it. Otherwise, leave the milestone empty.
+
+Available milestones:
+
+- **Improve developer resources**: For examples, documentation, improved code comments, starter kits, and `npm create tldraw` improvements
+- **Improve automations**: For GitHub Actions, review bots, CI/CD, and other automation improvements
+
+```bash
+gh issue edit <issue-number> --repo tldraw/tldraw-desktop --milestone "Milestone Name"
+```
+
+Only assign a milestone if there's a clear fit. Most issues won't need a milestone.
+
+**Important**: NEVER include "Generated with Claude Code", "Co-Authored-By: Claude", or any other AI attribution notes in the issue title or body.
+
+7. **Share the issue URL** with the user immediately after creation
+
+### Step 4: Deep research with subagent
+
+After creating the issue and sharing the link, use the Task tool to launch a research subagent:
+
+```
+Use the Task tool with subagent_type="Explore" to do a thorough investigation:
+
+- Search comprehensively for all code related to this issue
+- Identify the exact files and line numbers involved
+- Look for similar patterns, past fixes, or related issues
+- Understand the architecture and data flow
+- Consider edge cases and potential side effects
+- Brainstorm possible solutions with tradeoffs
+
+The subagent should be very thorough (specify this in the prompt).
+```
+
+### Step 5: Comment on the issue with findings
+
+Once the research subagent completes, add a comment to the issue with the findings:
+
+```bash
+gh issue comment <issue-number> --repo tldraw/tldraw-desktop --body "Research findings..."
+```
+
+The comment should include:
+
+- **Relevant files**: List specific files and line numbers
+- **Root cause analysis**: What's causing the issue (for bugs)
+- **Architecture context**: How the affected system works
+- **Potential solutions**: 2-3 approaches with tradeoffs
+- **Related code**: Links to relevant functions, types, or patterns
+- **Considerations**: Edge cases, breaking changes, testing needs
+
+Format the comment as a helpful research summary that would help someone pick up this issue.
+
+## Notes
+
+- Always create the issue first, then do the deep research
+- Share the issue link immediately so the user can see it while research continues
+- The research comment should be thorough but actionable
+- Use code blocks and file:line references for easy navigation
