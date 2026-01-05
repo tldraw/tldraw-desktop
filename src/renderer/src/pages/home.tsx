@@ -4,15 +4,18 @@ import { TitleBar } from '@renderer/components/Titlebar'
 import { TldrawLogo } from '@renderer/components/tldraw-logo'
 import { useRecentFiles } from '@renderer/hooks/useRecentFiles'
 import classNames from 'classnames'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
 export function Component() {
-	useEffect(() => {
+	// useLayoutEffect ensures all child component effects (like useRecentFiles listener)
+	// are registered before we send home-loaded, preventing a race condition where
+	// the home-info-ready response arrives before listeners are attached
+	useLayoutEffect(() => {
 		// When the api knows we're loaded, it will send a 'home-info-ready' event
 		const cleanup = window.api.onMainEvent('home-info-ready', () => {
 			window.api.sendRendererEventToMain('home-ready-to-show', {})
 		})
-		// 1. Tell the main process that we're ready to load the home page
+		// Tell the main process that we're ready to load the home page
 		window.api.sendRendererEventToMain('home-loaded', {})
 		return () => {
 			cleanup()
