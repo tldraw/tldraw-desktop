@@ -64,3 +64,4 @@
 - 2026-01-04 12:40:47 UTC: Implemented issue #30 - added .github/workflows/update-tldraw.yml for automated tldraw dependency updates
 - 2026-01-04 13:18:43 UTC: Updated update-tldraw.yml to support repository_dispatch from tldraw repo, added auto-merge; changed release.yml to publish immediately instead of draft
 - 2026-01-05 18:31:43 UTC: fixed race condition in home.tsx - recent files not showing on initial load (issue #33)
+- 2026-01-05 21:29:05 UTC: released v1.0.10
