@@ -35,14 +35,14 @@
 	"dependencies": {
 		"@electron-toolkit/preload": "^3.0.2",
 		"@electron-toolkit/utils": "^4.0.0",
-		"@tldraw/utils": "next",
+		"@tldraw/utils": "^4.3.0-next.40e4536afc8e",
 		"dotenv": "^17.0.0",
 		"electron-updater": "^6.6.2",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-router": "^7.6.1",
 		"react-router-dom": "^7.6.1",
-		"tldraw": "next"
+		"tldraw": "^4.3.0-next.40e4536afc8e"
 	},
 	"devDependencies": {
 		"@electron-toolkit/tsconfig": "^2.0.0",
