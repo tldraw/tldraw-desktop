@@ -19,7 +19,7 @@ An Electron application that provides an offline desktop editor for `.tldr` file
 ### Install
 
 ```bash
-npm run
+npm i
 ```
 
 ### Development
