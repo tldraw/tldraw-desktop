@@ -1,5 +1,0 @@
-provider: github
-owner: tldraw
-repo: tldraw-desktop
-updaterCacheDirName: tldraw-ev-updater
-private: true
