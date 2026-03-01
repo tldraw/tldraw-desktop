@@ -108,18 +108,98 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # TODO: Enable Windows and Linux builds
-  # build-windows:
-  #   needs: prepare
-  #   runs-on: windows-latest
-  #   ...
-  # build-linux:
-  #   needs: prepare
-  #   runs-on: ubuntu-latest
-  #   ...
+  build-windows:
+    needs: prepare
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout internal repo
+        uses: actions/checkout@v4
+        with:
+          repository: tldraw/tldraw-internal
+          token: ${{ secrets.INTERNAL_REPO_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Set version
+        working-directory: apps/public/desktop
+        run: npm version ${{ needs.prepare.outputs.version }} --no-git-tag-version
+
+      - name: Build app
+        working-directory: apps/public/desktop
+        run: yarn build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: |
+            apps/public/desktop/dist/*.exe
+            apps/public/desktop/dist/*.zip
+            apps/public/desktop/dist/*.blockmap
+            apps/public/desktop/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 7
+
+  build-linux:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout internal repo
+        uses: actions/checkout@v4
+        with:
+          repository: tldraw/tldraw-internal
+          token: ${{ secrets.INTERNAL_REPO_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Set version
+        working-directory: apps/public/desktop
+        run: npm version ${{ needs.prepare.outputs.version }} --no-git-tag-version
+
+      - name: Build app
+        working-directory: apps/public/desktop
+        run: yarn build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: |
+            apps/public/desktop/dist/*.AppImage
+            apps/public/desktop/dist/*.zip
+            apps/public/desktop/dist/*.blockmap
+            apps/public/desktop/dist/latest-linux.yml
+          if-no-files-found: error
+          retention-days: 7
 
   publish:
-    needs: [prepare, build-macos]
+    needs: [prepare, build-macos, build-windows, build-linux]
     runs-on: ubuntu-latest
     if: ${{ !inputs.dry_run }}
     permissions:
@@ -147,5 +227,7 @@ jobs:
             Built from `tldraw-internal/apps/public/desktop`.
           files: |
             artifacts/release-macos/*
+            artifacts/release-windows/*
+            artifacts/release-linux/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
