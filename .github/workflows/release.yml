@@ -46,7 +46,6 @@ jobs:
           MINOR=${PARTS[1]}
           PATCH=${PARTS[2]}
 
-          # Use input from workflow_dispatch or repository_dispatch payload
           TYPE="${{ inputs.version_type || github.event.client_payload.version_type || 'patch' }}"
 
           case "$TYPE" in
@@ -56,7 +55,7 @@ jobs:
           esac
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Current: $CURRENT → New: $NEW_VERSION ($TYPE)"
+          echo "Current: $CURRENT -> New: $NEW_VERSION ($TYPE)"
 
   build-macos:
     needs: prepare
@@ -83,11 +82,11 @@ jobs:
 
       - name: Set version
         working-directory: apps/public/desktop
-        run: npm version ${{ needs.prepare.outputs.version }} --no-git-tag-version
+        run: node -e "const p=require('./package.json'); p.version='${{ needs.prepare.outputs.version }}'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, '\t') + '\n')"
 
-      - name: Build app
+      - name: Build macOS (universal)
         working-directory: apps/public/desktop
-        run: yarn build:mac
+        run: yarn fetch-llms && yarn electron-vite build && yarn electron-builder --mac --universal
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -223,8 +222,6 @@ jobs:
           generate_release_notes: false
           body: |
             ## tldraw desktop v${{ needs.prepare.outputs.version }}
-
-            Built from `tldraw-internal/apps/public/desktop`.
           files: |
             artifacts/release-macos/*
             artifacts/release-windows/*
