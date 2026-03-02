@@ -1,29 +1,78 @@
 # tldraw desktop
 
-This repository hosts releases for the tldraw desktop app. Source code and development happen in the internal monorepo (`tldraw-internal`).
+A desktop editor for `.tldr` files, built with [tldraw](https://tldraw.dev) and Electron.
 
-## How releases work
+## Download
 
-1. The desktop app source lives in `tldraw-internal/apps/public/desktop/`
-2. Builds are triggered via the `release` workflow in this repo (manually or via `repository_dispatch`)
-3. `electron-builder` builds the app and publishes artifacts as GitHub Releases here
-4. `electron-updater` in the app checks this repo's releases for auto-updates
+Get the latest release from the [Releases page](https://github.com/tldraw/tldraw-desktop/releases/latest).
 
-## Triggering a release
+| Platform | Download |
+| --- | --- |
+| macOS (Apple Silicon + Intel) | `tldraw-{version}-universal.dmg` |
+| Windows x64 | `tldraw-{version}-win-x64.exe` |
+| Windows ARM64 | `tldraw-{version}-win-arm64.exe` |
+| Linux x64 | `tldraw-{version}-linux-x64.AppImage` or `.deb` |
+| Linux ARM64 | `tldraw-{version}-linux-arm64.AppImage` |
 
-### From GitHub Actions UI
+## Auto-updates
 
-Go to **Actions > Release > Run workflow** and select a version bump type (patch, minor, major).
+The app checks for updates on launch. When a new version is available, you'll be prompted to download and install it.
 
-### From the internal repo
+## Local Canvas API
 
-```bash
-# Trigger a release from tldraw-internal
-gh workflow run release.yml --repo tldraw/tldraw-desktop -f version_type=patch
+The desktop app runs a local HTTP server that exposes a Canvas API for programmatic access to your tldraw documents. This enables integrations with AI coding assistants and other tools.
+
+The server starts automatically when the app launches. Connection details are written to:
+
+- **macOS**: `~/Library/Application Support/tldraw/server.json`
+- **Windows**: `%APPDATA%/tldraw/server.json`
+- **Linux**: `~/.config/tldraw/server.json`
+
+The `server.json` file contains:
+
+```json
+{
+  "port": 32832,
+  "url": "http://localhost:32832"
+}
 ```
 
-### Locally (from tldraw-internal)
+### API endpoints
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/` | API documentation and available endpoints |
+| `GET` | `/api/windows` | List all open editor windows |
+| `GET` | `/api/windows/:id` | Get window details |
+| `GET` | `/api/windows/:id/canvas` | Get the full canvas (all shapes) as JSON |
+| `GET` | `/api/windows/:id/canvas/svg` | Export canvas as SVG |
+| `GET` | `/api/windows/:id/canvas/image` | Export canvas as PNG |
+| `GET` | `/api/windows/:id/selection` | Get currently selected shapes |
+| `POST` | `/api/windows/:id/canvas` | Create shapes on the canvas |
+| `PATCH` | `/api/windows/:id/canvas` | Update existing shapes |
+| `DELETE` | `/api/windows/:id/canvas` | Delete shapes by ID |
+| `POST` | `/api/windows/:id/exec` | Execute arbitrary tldraw editor commands |
+
+### Example usage
 
 ```bash
-yarn desktop publish
+# Read server connection info
+cat ~/Library/Application\ Support/tldraw/server.json
+
+# List open windows
+curl http://localhost:32832/api/windows
+
+# Get all shapes from a window
+curl http://localhost:32832/api/windows/{id}/canvas
+
+# Export as SVG
+curl http://localhost:32832/api/windows/{id}/canvas/svg
 ```
+
+## Development
+
+Source code lives in the [`tldraw-internal`](https://github.com/tldraw/tldraw-internal) monorepo at `apps/public/desktop/`.
+
+## License
+
+This project is not open source. All rights reserved.
