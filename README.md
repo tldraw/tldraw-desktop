@@ -22,7 +22,7 @@ The app checks for updates on launch. When a new version is available, you'll be
 
 The desktop app runs a local HTTP server that exposes a Canvas API for programmatic access to your tldraw documents. This enables integrations with AI coding assistants and other tools.
 
-The server starts automatically when the app launches. Connection details are written to:
+The server starts automatically when the app launches (default port 7236, falls back to a random port if taken). Connection details are written to:
 
 - **macOS**: `~/Library/Application Support/tldraw/server.json`
 - **Windows**: `%APPDATA%/tldraw/server.json`
@@ -32,8 +32,8 @@ The `server.json` file contains:
 
 ```json
 {
-  "port": 32832,
-  "url": "http://localhost:32832"
+  "port": 7236,
+  "pid": 12345
 }
 ```
 
@@ -41,17 +41,26 @@ The `server.json` file contains:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/` | API documentation and available endpoints |
-| `GET` | `/api/windows` | List all open editor windows |
-| `GET` | `/api/windows/:id` | Get window details |
-| `GET` | `/api/windows/:id/canvas` | Get the full canvas (all shapes) as JSON |
-| `GET` | `/api/windows/:id/canvas/svg` | Export canvas as SVG |
-| `GET` | `/api/windows/:id/canvas/image` | Export canvas as PNG |
-| `GET` | `/api/windows/:id/selection` | Get currently selected shapes |
-| `POST` | `/api/windows/:id/canvas` | Create shapes on the canvas |
-| `PATCH` | `/api/windows/:id/canvas` | Update existing shapes |
-| `DELETE` | `/api/windows/:id/canvas` | Delete shapes by ID |
-| `POST` | `/api/windows/:id/exec` | Execute arbitrary tldraw editor commands |
+| `GET` | `/` | API documentation (plain text) |
+| `GET` | `/api/llms` | tldraw SDK documentation (llms-full.txt) |
+| `GET` | `/api/doc` | List all open documents (supports `?name=` filter) |
+| `GET` | `/api/doc/:id/shapes` | Get all shapes on the current page |
+| `GET` | `/api/doc/:id/screenshot` | Screenshot of the canvas as JPEG |
+| `POST` | `/api/doc/:id/exec` | Execute arbitrary editor code |
+| `POST` | `/api/doc/:id/actions` | Execute structured canvas actions |
+
+### Screenshots
+
+`GET /api/doc/:id/screenshot` supports query parameters:
+
+- `size` - `small` (768px), `medium` (1536px), `large` (3072px), `full` (5000px)
+- `bounds` - Crop to specific area: `bounds=x,y,w,h`
+
+### Actions
+
+`POST /api/doc/:id/actions` accepts a JSON body with an `actions` array. Each action has a `_type` field:
+
+`create`, `update`, `delete`, `clear`, `move`, `place`, `label`, `align`, `distribute`, `stack`, `bringToFront`, `sendToBack`, `resize`, `rotate`, `pen`, `setMyView`
 
 ### Example usage
 
@@ -59,14 +68,19 @@ The `server.json` file contains:
 # Read server connection info
 cat ~/Library/Application\ Support/tldraw/server.json
 
-# List open windows
-curl http://localhost:32832/api/windows
+# List open documents
+curl http://localhost:7236/api/doc
 
-# Get all shapes from a window
-curl http://localhost:32832/api/windows/{id}/canvas
+# Get shapes from a document
+curl http://localhost:7236/api/doc/{id}/shapes
 
-# Export as SVG
-curl http://localhost:32832/api/windows/{id}/canvas/svg
+# Take a screenshot
+curl http://localhost:7236/api/doc/{id}/screenshot?size=medium -o screenshot.jpg
+
+# Execute editor code
+curl -X POST http://localhost:7236/api/doc/{id}/exec \
+  -H 'Content-Type: application/json' \
+  -d '{"code": "return editor.getCurrentPageShapeIds().size"}'
 ```
 
 ## Development
